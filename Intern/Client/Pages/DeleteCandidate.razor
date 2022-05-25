@@ -1,0 +1,104 @@
+﻿@page "/delete/{ID:int}"
+@using Intern.Share
+@inject HttpClient Http
+@inject NavigationManager NavigationManager
+<h1>Xóa CV</h1>
+<hr />
+<h3>Bạn có chắc muốn xóa Cv này không?</h3>
+
+<div class="row">
+    <div class="col-sm">
+        <label for="position" class="form-label">Chức danh</label>
+        <div class="col-md-10">
+            <label for="position" class="form-control">@candidate.PositionName</label>
+        </div>
+    </div>
+
+    <div class="col-sm">
+        <label for="team" class="form-label">Team</label>
+        <div class="col-md-10">
+            <label for="team" class="form-control">@candidate.TeamName</label>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-3 ">
+    <div class="col-sm">
+        <label for="Source" class="form-label">Nguồn</label>
+        <div class="col-md-10">
+            <label for="source" class="form-control">@candidate.Source</label>
+        </div>
+    </div>
+    <div class="col-sm">
+        <label for="Address" class="form-label">Address</label>
+        <div class="col-md-12">
+            <label for="address" class="form-control">@candidate.Address</label>
+        </div>
+    </div>
+</div>
+<div class="row mt-3">
+    <div class="col-sm">
+        <label for="name" class="form-label">Họ tên</label>
+        <div class="col-md-10">
+            <label for="name" class="form-control">@candidate.Name</label>
+        </div>
+    </div>
+
+    <div class="col-sm">
+        <label for="phone" class="form-label">Phone</label>
+        <div class="col-md-10">
+            <label for="phone" class="form-control">@candidate.Phone</label>
+        </div>
+    </div>
+</div>
+<div class="row mt-3">
+    <div class="col-sm">
+        <label for="Birthday" class="form-label">Ngày Sinh</label>
+        <div class="col-md-10">
+            <label for="bỉthday" class="form-control">@candidate.Birthday</label>
+        </div>
+    </div>
+
+    <div class="col-sm">
+        <label for="email" class="form-label">Email</label>
+        <div class="col-md-10">
+            <label for="email" class="form-control">@candidate.Email</label>
+        </div>
+    </div>
+</div>
+
+
+<div class="form-group">
+    <input type="submit" value="Delete" @onclick="(async () => await Delete(ID))" class="btn btn-danger" />
+    <input type="submit" value="Cancel" @onclick="(() => Cancel())" class="btn btn-warning" />
+</div>
+
+
+@code {
+
+    [Parameter]
+    public int ID { get; set; }
+
+    protected Candidate candidate = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await GetCv();
+    }
+    protected async Task GetCv()
+    {
+        candidate = await Http.GetFromJsonAsync<Candidate>("/api/Candidate/get/" + Convert.ToInt32(ID));
+
+    }
+    public void Cancel()
+    {
+        NavigationManager.NavigateTo("/");
+    }
+    protected async Task Delete(int id)
+    {
+        await Http.DeleteAsync("/api/Candidate/delete/" + Convert.ToInt32(id));
+
+        Cancel();
+    }
+
+}

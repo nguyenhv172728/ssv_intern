@@ -1,0 +1,206 @@
+﻿@page "/"
+@inject HttpClient Http
+@using Intern.Share
+@inject IJSRuntime JSRunTime
+@inject NavigationManager NavigationManager
+<PageTitle>Lịch phỏng vấn</PageTitle>
+<h1>Lịch phỏng vấn</h1>
+
+@if (candidates == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Ngày</th>
+                <th>Nội dung</th>
+                <th>Vị trí</th>
+                <th>Chức vụ</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var candidate in candidates)
+            {
+                <tr>
+                    <td>
+                        @candidate.TimeInterview
+                    </td>
+                    <td>
+                        <button type="button" class="btn btn-success"
+                        @onclick="()=>OpenEdit(candidate)">
+                            Phỏng vấn ứng viên @candidate.Name
+                        </button>
+                    </td>
+                    <td>
+                        @candidate.TeamName
+                    </td>
+                    <td>
+                        @candidate.PositionName
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@if (_OpenEdit)
+{
+    <div class="modal fade show" id="myModal" style="display:block; background-color: rgba(10,10,10,.8);"
+     aria-modal="true" role="dialog">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title">Thông tin buổi phỏng vấn</h4>
+                </div>
+                <div class="modal-body">
+                    <div>
+                        <div>
+                            <label for="name" class="form-label">Tên</label>
+                            <div class="col-md-10">
+                                <input class="form-control" @bind="edit_candidate.Name" />
+                            </div>
+                        </div>
+
+                        <div>
+                            <label for="team" class="form-label">Bộ Phận</label>
+                            <div class="col-md-10">
+                                <input class="form-control" @bind="edit_candidate.TeamName" />
+                            </div>
+                        </div>
+
+                        <div>
+                            <label for="time" class="form-label">Thời gian phỏng vấn</label>
+                            <div class="col-md-10">
+                                <input type="datetime-local" class="form-control" @bind="edit_candidate.TimeInterview" />
+                            </div>
+                        </div>
+
+                        <div>
+                            <label for="time" class="form-label">Địa điểm phỏng vấn</label>
+                            <div class="col-md-10">
+                                <input class="form-control" @bind="edit_candidate.LocationInterview" />
+                            </div>
+                        </div>
+
+                        <div>
+                            <label for="time" class="form-label">Phòng họp</label>
+                            <div class="col-md-10">
+                                <input class="form-control" @bind="edit_candidate.RoomInterview" />
+                            </div>
+                        </div>
+
+                    </div>
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-primary" @onclick="@Back">Back</button>
+                    <button type="button" class="btn btn-primary" @onclick="@Edit">Lưu</button>
+                    <button type="button" class="btn btn-danger" @onclick="()=>Delete(edit_candidate.ID)">Delete</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    public bool _OpenEdit { get; set; }
+    Candidate edit_candidate = new Candidate();
+    List<InterviewPerson> interviewpersons = new List<InterviewPerson>();
+    public List<string> _peopleinterview = new List<string>();
+    private void OpenEdit(Candidate candidate)
+    {
+        edit_candidate.ID = candidate.ID;
+        edit_candidate.Name = candidate.Name;
+        edit_candidate.PositionName = candidate.PositionName;
+        edit_candidate.TeamName = candidate.TeamName;
+        edit_candidate.TimeInterview = candidate.TimeInterview;
+        edit_candidate.LocationInterview = candidate.LocationInterview;
+        edit_candidate.RoomInterview = candidate.RoomInterview;
+        edit_candidate.InterviewPeople = candidate.InterviewPeople;
+        _OpenEdit = true;
+        StateHasChanged();
+    }
+
+
+    List<Candidate> candidates = new List<Candidate>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await GetCandidateCalendered();
+    }
+
+    List<DateTime?> list = new List<DateTime?>();
+    protected async Task GetCandidateCalendered()
+    {
+        candidates = await Http.GetFromJsonAsync<List<Candidate>>("api/candidate/getcandidate_calendered");
+        var persons = from p in candidates
+                      orderby p.TimeInterview
+                      select p;
+        candidates = persons.ToList();
+    }
+
+
+    protected async Task Edit()
+    {
+        await Http.PutAsJsonAsync("api/candidate/update_calender", edit_candidate);
+        Convert(edit_candidate.InterviewPeople);
+        foreach (var item in _peopleinterview)
+        {
+            Gmail gmail = new Gmail(item.ToString(), "Thay đổi lịch phỏng vấn ứng viên", $"Phỏng vấn ứng viên {edit_candidate.Name}, vị trí {edit_candidate.PositionName} {edit_candidate.TeamName}, vào lúc {edit_candidate.TimeInterview}, địa điểm {edit_candidate.LocationInterview}, tại phòng {edit_candidate.RoomInterview}");
+            await Http.PostAsJsonAsync("api/Gmail/sendemail", gmail);
+        }
+        await JSRunTime.InvokeVoidAsync("eval", "alert(\"Đã thay đổi lịch phỏng vấn này\")");
+        await GetCandidateCalendered();
+        Back();
+
+    }
+
+    protected async Task Delete(int id)
+    {
+        Candidate candidate = new Candidate();
+        candidate.ID = id;
+        await Http.PutAsJsonAsync("api/candidate/delete_from_calender", candidate);
+        Convert(edit_candidate.InterviewPeople);
+        foreach (var item in _peopleinterview)
+        {
+            Gmail gmail = new Gmail(item.ToString(), "Hủy lịch phỏng vấn ứng viên", $"Hủy lịch phỏng vấn ứng viên {edit_candidate.Name}, vị trí {edit_candidate.PositionName} {edit_candidate.TeamName}, vào lúc {edit_candidate.TimeInterview}, địa điểm {edit_candidate.LocationInterview}, tại phòng {edit_candidate.RoomInterview}");
+            await Http.PostAsJsonAsync("api/Gmail/sendemail", gmail);
+        }
+        await JSRunTime.InvokeVoidAsync("eval", "alert(\"Đã xóa lịch phỏng vấn này\")");
+        await GetCandidateCalendered();
+        Back();
+    }
+
+
+    private void Back()
+    {
+        _OpenEdit = false;
+    }
+
+    private void Convert(string str)
+    {
+        int start = 0;
+        char[] charArray = str.ToCharArray();
+        for (int i = 0; i < charArray.Length; i++)
+        {
+            if (charArray[i] == ' ')
+            {
+                string tr = new string(charArray, start, i - start);
+                start = i + 1;
+                if (tr != null && tr != "") { _peopleinterview.Add(tr); }
+
+            }
+            if (i == charArray.Length - 1)
+            {
+                string tr = new string(charArray, start, i - start + 1);
+                if (tr != null && tr != "") { _peopleinterview.Add(tr); }
+                break;
+            }
+        }
+    }
+
+
+}

@@ -1,0 +1,155 @@
+﻿@page "/edit/{ID:int}"
+@using Intern.Share
+@inject HttpClient Http
+@inject NavigationManager NavigationManager
+<h1>Sửa CV</h1>
+<hr />
+<EditForm Model="@candidate" OnValidSubmit="SaveCandidate" class=row>
+    <DataAnnotationsValidator />
+    <div class="row">
+        <div class="col-sm">
+            <label for="Position" class="form-label">Chức danh</label>
+            <div class="col-md-10">
+                <InputSelect id="position" @bind-Value="candidate.PositionID" class="form-control"> 
+                    @foreach (var position in positions)
+                    {
+                        <option value="@position.PositionID">@position.PositionName</option>
+                    }
+                </InputSelect>
+            </div>
+        </div> 
+
+        <div class="col-sm">
+            <label for="Team" class="form-label">Vị trí</label> 
+            <div class="col-md-10">
+                <InputSelect id="team" @bind-Value="candidate.TeamID" class="form-control">
+                    @foreach (var team in teams)
+                    {
+                        <option value="@team.TeamID">@team.TeamName</option>
+                    }
+                </InputSelect>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-3 ">
+        <div class="col-sm">
+            <label for="ImportCV" class="form-label">Import CV</label>
+            <div class="col-md-10">
+                <InputFile OnChange="LoadImage" mutiple class="form-control" />
+            </div>
+            <ValidationMessage For="@(() => candidate.Cv)" />
+        </div>
+
+        <div class="col-sm">
+            <label for="Source" class="form-label">Nguồn</label>
+            <div class="col-md-10">
+                <InputText class="form-control" @bind-Value="candidate.Source" />
+            </div>
+            <ValidationMessage For="@(() => candidate.Source)" />
+        </div>
+    </div>
+    <div class="row mt-3">
+        <div class="col-sm">
+            <label for="name" class="form-label">Họ tên</label>
+            <div class="col-md-10">
+                <InputText class="form-control" @bind-Value="candidate.Name" />
+            </div>
+            <ValidationMessage For="@(() => candidate.Name)" />
+        </div>
+
+        <div class="col-sm">
+            <label for="phone" class="form-label">Phone</label>
+            <div class="col-md-10">
+                <InputText class="form-control" @bind-Value="candidate.Phone" />
+            </div>
+            <ValidationMessage For="@(() => candidate.Phone)" />
+        </div>
+    </div>
+    <div class="row mt-3">
+        <div class="col-sm">
+            <label for="Birthday" class="form-label">Ngày Sinh</label>
+            <div class="col-md-10">
+                <InputText class="form-control" @bind-Value="candidate.Birthday" />
+            </div>
+            <ValidationMessage For="@(() => candidate.Birthday)" />
+        </div>
+
+        <div class="col-sm">
+            <label for="email" class="form-label">Email</label>
+            <div class="col-md-10">
+                <InputText class="form-control" @bind-Value="candidate.Email" />
+            </div>
+            <ValidationMessage For="@(() => candidate.Email)" />
+        </div>
+    </div>
+    <div class="row mt-3">
+        <div class="col-sm">
+            <label for="Address" class="form-label">Address</label>
+            <div class="col-md-12">
+                <InputText class="form-control" @bind-Value="candidate.Address" />
+            </div>
+            <ValidationMessage For="@(() => candidate.Address)" />
+        </div>
+    </div>
+
+    <div class="form-group mt-3">
+        <button type="submit" class="btn btn-primary">Save</button>
+        <button class="btn btn-light" @onclick="Cancel">Cancel</button>
+    </div>
+
+</EditForm>
+@code {
+
+    [Parameter]
+    public int ID { get; set; }
+    protected Candidate candidate = new(); 
+    protected Position position = new();
+    protected List<Position> positions = new List<Position>();
+    protected Team team = new();
+    protected List<Team> teams = new List<Team>();
+    protected override async Task OnInitializedAsync()
+    {
+        await GetPosition();
+        await GetTeam();
+        await GetCv();
+    }
+    protected async Task GetPosition()
+    {
+        positions = await Http.GetFromJsonAsync<List<Position>>("api/position/get");
+    }
+    protected async Task GetTeam()
+    {
+        teams = await Http.GetFromJsonAsync<List<Team>>("api/team/get");
+    }
+
+    
+    protected async Task GetCv()
+    {
+        candidate = await Http.GetFromJsonAsync<Candidate>("/api/Candidate/get/" + Convert.ToInt32(ID));
+
+    }
+    public void Cancel()
+    {
+        NavigationManager.NavigateTo("/");
+    }
+  
+    public async Task LoadImage(InputFileChangeEventArgs e)
+    {
+        var imageFiles = e.GetMultipleFiles();
+        var imageFile = imageFiles[0];
+        Stream stream = imageFile.OpenReadStream(999999999);
+        MemoryStream ms = new MemoryStream();
+        await stream.CopyToAsync(ms);
+        stream.Close();
+        candidate.Cv = Convert.FromBase64String(Convert.ToBase64String(ms.ToArray()));
+    }
+
+    protected async Task SaveCandidate()
+    {
+        await Http.PutAsJsonAsync("api/Candidate/put", candidate);
+ 
+        Cancel();
+    }
+    
+}

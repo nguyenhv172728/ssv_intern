@@ -1,0 +1,107 @@
+is_global = true
+build_property.TargetFramework = net6.0
+build_property.TargetPlatformMinVersion = 
+build_property.UsingMicrosoftNETSdkWeb = 
+build_property.ProjectTypeGuids = 
+build_property.InvariantGlobalization = false
+build_property.PlatformNeutralAssembly = 
+build_property._SupportedPlatformList = browser
+build_property.EnableSingleFileAnalyzer = 
+build_property.EnableTrimAnalyzer = true
+build_property.IncludeAllContentForSelfExtract = 
+build_property.RootNamespace = Intern.Client
+build_property.RootNamespace = Intern.Client
+build_property.ProjectDir = C:\Project\Internship\CVManager\Intern\Intern\Client\
+build_property.RazorLangVersion = 6.0
+build_property.SupportLocalizedComponentNames = 
+build_property.GenerateRazorMetadataSourceChecksumAttributes = 
+build_property.MSBuildProjectDirectory = C:\Project\Internship\CVManager\Intern\Intern\Client
+build_property._RazorSourceGeneratorDebug = 
+
+[C:/Project/Internship/CVManager/Intern/Intern/Client/App.razor]
+build_metadata.AdditionalFiles.TargetPath = QXBwLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Project/Internship/CVManager/Intern/Intern/Client/Pages/AcceptCVConfirmDialog.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQWNjZXB0Q1ZDb25maXJtRGlhbG9nLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Project/Internship/CVManager/Intern/Intern/Client/Pages/AddCandidate.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQWRkQ2FuZGlkYXRlLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Project/Internship/CVManager/Intern/Intern/Client/Pages/DeleteCandidate.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcRGVsZXRlQ2FuZGlkYXRlLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Project/Internship/CVManager/Intern/Intern/Client/Pages/EditCandidate.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcRWRpdENhbmRpZGF0ZS5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Project/Internship/CVManager/Intern/Intern/Client/Pages/EditMailDialog.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcRWRpdE1haWxEaWFsb2cucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Project/Internship/CVManager/Intern/Intern/Client/Pages/HandleAcceptedCVCandidate .razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcSGFuZGxlQWNjZXB0ZWRDVkNhbmRpZGF0ZSAucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Project/Internship/CVManager/Intern/Intern/Client/Pages/HandleRawCandidate.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcSGFuZGxlUmF3Q2FuZGlkYXRlLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Project/Internship/CVManager/Intern/Intern/Client/Pages/IgnoreCVConfirmDialog.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcSWdub3JlQ1ZDb25maXJtRGlhbG9nLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Project/Internship/CVManager/Intern/Intern/Client/Pages/InterviewCalender.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcSW50ZXJ2aWV3Q2FsZW5kZXIucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Project/Internship/CVManager/Intern/Intern/Client/Pages/InterviewPersonManager.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcSW50ZXJ2aWV3UGVyc29uTWFuYWdlci5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Project/Internship/CVManager/Intern/Intern/Client/Pages/InterViewPlanning.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcSW50ZXJWaWV3UGxhbm5pbmcucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Project/Internship/CVManager/Intern/Intern/Client/Pages/ListRawCandiate.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcTGlzdFJhd0NhbmRpYXRlLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Project/Internship/CVManager/Intern/Intern/Client/Pages/SendEmail.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcU2VuZEVtYWlsLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Project/Internship/CVManager/Intern/Intern/Client/Pages/Test.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcVGVzdC5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Project/Internship/CVManager/Intern/Intern/Client/Pages/UpdateStatus.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcVXBkYXRlU3RhdHVzLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Project/Internship/CVManager/Intern/Intern/Client/Pages/ViewCVDialog.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcVmlld0NWRGlhbG9nLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Project/Internship/CVManager/Intern/Intern/Client/Pages/WhyIgnoreDialog.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcV2h5SWdub3JlRGlhbG9nLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Project/Internship/CVManager/Intern/Intern/Client/Shared/SurveyPrompt.razor]
+build_metadata.AdditionalFiles.TargetPath = U2hhcmVkXFN1cnZleVByb21wdC5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Project/Internship/CVManager/Intern/Intern/Client/_Imports.razor]
+build_metadata.AdditionalFiles.TargetPath = X0ltcG9ydHMucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Project/Internship/CVManager/Intern/Intern/Client/Shared/MainLayout.razor]
+build_metadata.AdditionalFiles.TargetPath = U2hhcmVkXE1haW5MYXlvdXQucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = b-r22s064usr
+
+[C:/Project/Internship/CVManager/Intern/Intern/Client/Shared/NavMenu.razor]
+build_metadata.AdditionalFiles.TargetPath = U2hhcmVkXE5hdk1lbnUucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = b-h4g1w3x86g

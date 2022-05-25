@@ -1,0 +1,163 @@
+﻿@page "/updatestatus/{ID:int}"
+@using Intern.Share
+@inject HttpClient Http
+@inject NavigationManager NavigationManager
+<h1>Cập nhật trạng thái ứng viên</h1>
+<hr />
+<EditForm Model="@candidate" OnValidSubmit="SaveCandidate" class=row>
+    <DataAnnotationsValidator />
+    <div class="row">
+        <div class="col-sm">
+            <label for="Position" class="form-label">Chức danh:  </label>
+            <label for="Position" class="form-label">@candidate.PositionName</label>
+        </div>
+
+        <div class="col-sm">
+            <label for="Team" class="form-label">Vị trí:  </label>
+            <label for="Team" class="form-label">@candidate.TeamName</label>
+        </div>
+    </div>
+
+    <div class="row mt-3">
+        <div class="col-sm">
+            <label for="Position" class="form-label">Name:  </label>
+            <label for="Position" class="form-label">@candidate.Name</label>
+        </div>
+
+        <div class="col-sm">
+            <label for="Team" class="form-label">Phone:  </label>
+            <label for="Team" class="form-label">@candidate.Phone</label>
+        </div>
+    </div>
+
+    <div class="row mt-3">
+        <div class="col-sm">
+            <label for="timepv" class="form-label">Thời gian phỏng vấn</label>
+            <div class="col-md-10">
+                <input type="datetime-local" class="form-control" @bind="candidate.TimeInterview" />
+            </div>
+        </div>
+
+        <div class="col-sm">
+            <label for="locationpv" class="form-label">Địa điểm phỏng vấn</label>
+            <div class="col-md-10">
+                <InputText class="form-control" @bind-Value="candidate.LocationInterview" />
+            </div>
+        </div>
+    </div>
+
+     <div class="row mt-3">
+        <div class="col-sm">
+            <label for="note" class="form-label">Note</label>
+            <div class="col-md-10">
+                <InputText class="form-control" @bind-Value="candidate.Note" />
+            </div>
+        </div>
+
+        <div class="col-sm">
+            <label for="testpoint" class="form-label">Điểm test</label>
+            <div class="col-md-10">
+                <InputText class="form-control" @bind-Value="candidate.TestPoint" />
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-3">
+        <div class="col-sm">
+            <label for="Position" class="form-label">Liên hệ</label>
+            <div class="col-md-10">
+            <InputSelect id="cancontact" @bind-Value="candidate.CanContact" class="form-control">
+                <option value="Chưa">Chưa</option>
+                <option value="Đã liên hệ">Đã liên hệ</option>
+                <option value="Không liên hệ được">Không liên hệ được</option>
+            </InputSelect>
+            </div>
+        </div>
+
+        <div class="col-sm">
+            <label for="Team" class="form-label">Trạng thái</label>
+            <div class="col-md-10">
+            <InputSelect id="status" @bind-Value="candidate.Status" class="form-control">
+                <option value=0> Nhận CV</option>
+                <option value=1>Loại CV</option>
+                <option value=2>Duyệt CV</option>
+                <option value=3> Mời Test</option>
+                <option value=4>Test OK</option>
+                <option value=5>Mời PV vòng 1</option>
+                <option value=6>Pass vòng 1</option>
+                <option value=7>Mời PV vòng 2</option>
+                <option value=8>Pass vòng 2</option>
+                <option value=9>Đã gửi Offer</option>
+                <option value=10>Đã nhận Offer</option>
+                <option value=11>Từ chối Offer</option>
+                <option value=12>Đã gửi Form</option>
+                <option value=13>All OK</option>
+            </InputSelect>
+            </div>
+        </div>
+    </div>
+
+    <div class="form-group mt-3">
+        <button type="submit" class="btn btn-primary" @onclick="SaveCandidate">Save</button>
+        <button class="btn btn-light" @onclick="Cancel">Cancel</button>
+    </div>
+
+</EditForm>
+@code {
+
+    [Parameter]
+    public int ID { get; set; }
+    protected Candidate candidate = new();
+    protected Position position = new();
+    protected List<Position> positions = new List<Position>();
+    protected Team team = new();
+    protected List<Team> teams = new List<Team>();
+    protected int? pre_status;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await GetCv();
+    }
+
+
+    protected async Task GetCv()
+    {
+        candidate = await Http.GetFromJsonAsync<Candidate>("/api/Candidate/getcandidatepasscv/" + Convert.ToInt32(ID));
+        pre_status = candidate.Status;
+    }
+    public void Cancel()
+    {
+        NavigationManager.NavigateTo("/");
+    }
+
+
+    public async Task SaveCandidate()
+
+    {
+        if(candidate.Status==1){ candidate.WhyIgnore = getstatus(pre_status); }
+        await Http.PutAsJsonAsync("api/Candidate/updatestatus", candidate);
+
+        Cancel();
+    }
+
+    public string getstatus(int? i)
+    {
+        string a = "";
+        if(i==0){ a = "Nhận CV"; }
+        if(i==1){ a = "Loại CV"; }
+        if(i==2){ a = "Duyệt CV"; }
+        if(i==3){ a = "Mời Test"; }
+        if(i==4){ a = "Test OK"; }
+        if(i==5){ a = "Mời PV vòng 1"; }
+        if(i==6){ a = "Pass vòng 1"; }
+        if(i==7){ a = "Mời PV vòng 2"; }
+        if(i==8){ a = "Pass vòng 2"; }
+        if(i==9){ a = "Đã gửi Offer"; }
+        if(i==10){ a = "Đã nhận Offer   "; }
+        if(i==11){ a = "Từ chối Offer"; }
+        if(i==12){ a = "Đã gửi Form"; }
+        if(i==13){ a = "All OK"; }
+        return a;
+    }
+
+}

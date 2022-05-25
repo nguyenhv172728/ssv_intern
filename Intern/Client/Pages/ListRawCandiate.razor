@@ -1,0 +1,132 @@
+﻿@page "/listcv"
+@inject HttpClient Http
+@using Intern.Share
+@inject NavigationManager NavigationManager
+<PageTitle>Danh sách CV</PageTitle>
+<h1>Danh sách CV</h1>
+<div>
+    <a href='/add' class="btn btn-outline-danger" role="button">Thêm ứng viên</a>
+</div>
+<div class="input-group col mt-5">
+    <input type="search" class="form-control" placeholder="Tìm tên ứng viên"
+           @bind="SearchString" @bind:event="oninput" @onkeyup="FilterUser" />
+</div>
+
+@if (candidates == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Chức Danh</th>
+                <th>Vị trí</th>
+                <th>Họ tên</th>
+                <th>Ngày Sinh</th>
+                <th>Địa chỉ</th>
+                <th>Số điện thoại</th>
+                <th>Email</th>
+                <th>Lý do loại lần trước</th>
+                <th>Nguồn</th>
+                <th>CV</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var candidate in candidates)
+            {
+                <tr>
+                    <td>@candidate.PositionName</td>
+                    <td>@candidate.TeamName</td>
+                    <td>@candidate.Name</td>
+                    <td>@candidate.Birthday</td>
+                    <td>@candidate.Address</td>
+                    <td>@candidate.Phone</td>
+                    <td>@candidate.Email</td>
+                    <td>@candidate.WhyIgnore</td>
+                    <td>@candidate.Source</td>
+                    <td>
+                        <button type="button" class="btn btn-danger btn-sm"
+                        @onclick="() => OpenDialog(candidate.ID)">
+                            View CV
+                        </button>
+                    </td>
+                    <td>
+                        <a href='/edit/@candidate.ID' class="btn btn-outline-dark" role="button">
+                            Edit
+                        </a>
+                        <a href='/delete/@candidate.ID' class="btn btn-outline-danger" role="button">
+                            Delete
+                        </a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+
+
+@if (Open)
+{
+    <ViewCVDialog Title="CV Detail"
+              OnClose="@CloseDialog"
+              ByteCV=CV>
+    </ViewCVDialog>
+}
+@code {
+    public bool Open { get; set; }
+
+    private async Task CloseDialog(bool accept)
+    {
+        if (accept == true)
+        {
+            Open = false;
+            StateHasChanged();
+            CV = null;
+        }
+    }
+
+    byte[]? CV;
+    private async Task OpenDialog(int id)
+    {
+        CV = await Http.GetFromJsonAsync<byte[]>("/api/Candidate/getCV/" + Convert.ToInt32(id));
+        Open = true;
+        StateHasChanged();
+    }
+
+    protected List<Candidate> candidates = new List<Candidate>();
+    protected List<Candidate> searchcandidates = new();
+    protected string SearchString { get; set; } = string.Empty;
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        await GetCv();
+    }
+    protected async Task GetCv()
+    {
+        candidates = await Http.GetFromJsonAsync<List<Candidate>>("api/candidate/get");
+
+    }
+
+    protected async Task FilterUser()
+    {
+        if (!string.IsNullOrEmpty(SearchString))
+        {
+            candidates = await Http.GetFromJsonAsync<List<Candidate>>("api/candidate/search/" + Convert.ToString(SearchString));
+        }
+        else
+        {
+            candidates = await Http.GetFromJsonAsync<List<Candidate>>("api/candidate/get");
+        }
+    }
+
+    public async Task ResetSearch()
+    {
+        SearchString = string.Empty;
+        candidates = await Http.GetFromJsonAsync<List<Candidate>>("api/candidate/get");
+    }
+
+}

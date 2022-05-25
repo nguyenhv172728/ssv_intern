@@ -1,0 +1,267 @@
+﻿@page "/interviewpersonmanager"
+@inject HttpClient Http
+@using Intern.Share
+@inject NavigationManager NavigationManager
+<PageTitle>Quản lý người phỏng vấn</PageTitle>
+<h1>Quản lý người phỏng vấn</h1>
+<div>
+    <button type="button" class="btn btn-danger btn-sm"
+            @onclick="@OpenAdd">
+        Thêm
+    </button>
+</div>
+
+@if (interviewpersons == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Tên</th>
+                <th>Team</th>
+                <th>Email</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var interviewPerson in interviewpersons)
+            {
+                <tr>
+                    <td>@interviewPerson.Name</td>
+                    <td>@interviewPerson.Team</td>
+                    <td>@interviewPerson.Mail</td>
+                    <td>
+                        <button type="button" class="btn btn-primary"
+                        @onclick="()=>OpenEdit(interviewPerson.ID,interviewPerson.Name,interviewPerson.Team,interviewPerson.Mail)">
+                            Sửa
+                        </button>
+                        <button type="button" class="btn btn-danger"
+                        @onclick="()=>OpenDelete(interviewPerson.ID,interviewPerson.Name,interviewPerson.Team,interviewPerson.Mail)">
+                            Xóa
+                        </button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@if (_OpenAdd)
+{
+    <div class="modal fade show" id="myModal" style="display:block; background-color: rgba(10,10,10,.8);"
+     aria-modal="true" role="dialog">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title">Thêm người phỏng vấn</h4>
+                </div>
+                <div class="modal-body">
+                    <div>
+                        <div>
+                            <label for="name" class="form-label">Tên</label>
+                            <div class="col-md-10">
+                                <input class="form-control" @bind="add_interviewPerson.Name" />
+                            </div>
+                        </div>
+
+                        <div>
+                            <label for="time" class="form-label">Bộ Phận</label>
+                            <div class="col-md-10">
+                                <input class="form-control" @bind="add_interviewPerson.Team" />
+                            </div>
+                        </div>
+
+                        <div>
+                            <label for="location" class="form-label">Email</label>
+                            <div class="col-md-10">
+                                <input class="form-control" @bind="add_interviewPerson.Mail" />
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-danger" @onclick="@Back">Back</button>
+                    <button type="button" class="btn btn-primary" @onclick="@Add">Save</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@if (_OpenEdit)
+{
+    <div class="modal fade show" id="myModal" style="display:block; background-color: rgba(10,10,10,.8);"
+     aria-modal="true" role="dialog">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title"></h4>
+                </div>
+                <div class="modal-body">
+                    <div>
+                        <div>
+                            <label for="name" class="form-label">Tên</label>
+                            <div class="col-md-10">
+                                <input class="form-control" @bind="name" />
+                            </div>
+                        </div>
+
+                        <div>
+                            <label for="time" class="form-label">Bộ Phận</label>
+                            <div class="col-md-10">
+                                <input class="form-control" @bind="team" />
+                            </div>
+                        </div>
+
+                        <div>
+                            <label for="location" class="form-label">Email</label>
+                            <div class="col-md-10">
+                                <input class="form-control" @bind="email" />
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-danger" @onclick="@Back">Back</button>
+                    <button type="button" class="btn btn-primary" @onclick="@Edit">Edit</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@if (_OpenDelete)
+{
+    <div class="modal fade show" id="myModal" style="display:block; background-color: rgba(10,10,10,.8);"
+     aria-modal="true" role="dialog">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title">Bạn có chắc muốn xóa người này</h4>
+                </div>
+                <div class="modal-body">
+                    <div>
+                        <div>
+                            <label for="name" class="form-label">Tên</label>
+                            <div class="col-md-10">
+                                <input class="form-control" @bind="name" />
+                            </div>
+                        </div>
+
+                        <div>
+                            <label for="time" class="form-label">Bộ Phận</label>
+                            <div class="col-md-10">
+                                <input class="form-control" @bind="team" />
+                            </div>
+                        </div>
+
+                        <div>
+                            <label for="location" class="form-label">Email</label>
+                            <div class="col-md-10">
+                                <input class="form-control" @bind="email" />
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" @onclick="@Back">Back</button>
+                    <button type="button" class="btn btn-danger"  @onclick="()=>Delete(id)">Delete</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+@code {
+    public bool _OpenAdd { get; set; }
+    public bool _OpenEdit { get; set; }
+    public bool _OpenDelete { get; set; }
+    public string name;
+    public string email;
+    public string team;
+    public int id;
+    InterviewPerson interviewPerson = new();
+    InterviewPerson add_interviewPerson = new();
+    InterviewPerson edit_interviewPerson = new();
+    InterviewPerson delete_interviewPerson = new();
+
+    private void OpenAdd()
+    {
+        _OpenAdd = true;
+        StateHasChanged();
+    }
+
+    private void OpenEdit(int _id, string _name, string _team, string _mail)
+    {
+        id = _id;
+        name = _name;
+        team = _team;
+        email = _mail;
+        _OpenEdit = true;
+        StateHasChanged();
+    }
+
+    private void OpenDelete(int _id, string _name, string _team, string _mail)
+    {
+        id = _id;
+        name = _name;
+        team = _team;
+        email = _mail;
+        _OpenDelete = true;
+        StateHasChanged();
+    }
+
+    protected List<InterviewPerson> interviewpersons = new List<InterviewPerson>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await GetInterviewPeople();
+    }
+    protected async Task GetInterviewPeople()
+    {
+        interviewpersons = await Http.GetFromJsonAsync<List<InterviewPerson>>("api/InterviewPerson/get");
+
+    }
+
+    protected async Task Add()
+    {
+        await Http.PostAsJsonAsync("api/InterviewPerson/post", add_interviewPerson);
+        Back();
+        await GetInterviewPeople();
+    }
+
+    protected async Task Edit()
+    {
+        edit_interviewPerson.ID = id;
+        edit_interviewPerson.Name = name;
+        edit_interviewPerson.Mail = email;
+        edit_interviewPerson.Team = team;
+        await Http.PutAsJsonAsync("api/InterviewPerson/put", edit_interviewPerson);
+        Back();
+        await GetInterviewPeople();
+    }
+
+    protected async Task Delete(int id)
+    {
+
+        await Http.DeleteAsync("/api/InterviewPerson/delete/" + Convert.ToInt32(id));
+        Back();
+        await GetInterviewPeople();
+    }
+
+
+    private void Back()
+    {
+        _OpenAdd = false;
+        _OpenEdit = false;
+        _OpenDelete = false;
+    }
+
+    
+
+
+}

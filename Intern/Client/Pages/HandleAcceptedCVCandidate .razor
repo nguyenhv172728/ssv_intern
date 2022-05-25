@@ -1,0 +1,285 @@
+﻿@page "/handlepasscv"
+@inject HttpClient Http
+@using Intern.Share
+@inject NavigationManager NavigationManager
+<PageTitle>Liên hệ ứng viên</PageTitle>
+<h1>Cập nhật trạng thái ứng viên</h1>
+
+<div class="input-group col mt-5">
+    <input type="search" class="form-control" placeholder="Tìm tên ứng viên"
+           @bind="SearchString" @bind:event="oninput" @onkeyup="Search" />
+</div>
+
+<div class="row mt-3">
+    <div class="col">
+        <div class="col-md-10">
+            <label for="Position" class="form-label">Chức danh</label>
+            <select @onchange="(e) => FilterPosition(e.Value.ToString())">
+                <option value="all">---ALL---</option>
+                @foreach (var position in positions)
+                {
+                    <option value="@position.PositionName" selected="@(filter_position == position.PositionName)">@position.PositionName</option>
+                }
+            </select>
+        </div>
+    </div>
+    <div class="col-sm">
+        <div class="col">
+            <label for="Team" class="form-label">Vị trí</label>
+            <select @onchange="(e) => FilterTeam(e.Value.ToString())">
+                <option value="all">---ALL---</option>
+                @foreach (var team in teams)
+                {
+                    <option value="@team.TeamName" selected="@(filter_team == team.TeamName)">@team.TeamName</option>
+                }
+            </select>
+        </div>
+    </div>
+</div>
+
+
+
+@if (candidates == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Chức danh</th>
+                <th>Vị trí</th>
+                <th>Họ tên</th>
+                <th>Số điện thoại</th>
+                <th>Liên hệ được?</th>
+                <th>Thời gian PV</th>
+                <th>Địa điểm PV</th>
+                <th>Note</th>
+                <th>Trạng thái</th>
+                <th>Đã gửi Mail?</th>
+                <th>Hành động</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var candidate in candidates)
+            {
+                <tr>
+                    <td>
+                        <button class="btn btn-link"
+                        @onclick="() => OpenCVDialog(candidate.ID)">
+                            @candidate.Count
+                        </button>
+                    </td>
+                    <td>@candidate.PositionName</td>
+                    <td>@candidate.TeamName</td>
+                    <td>@candidate.Name</td>
+                    <td>@candidate.Phone</td>
+                    <td>@candidate.CanContact</td>
+                    <td>@candidate.TimeInterview</td>
+                    <td>@candidate.LocationInterview</td>
+                    <td>@candidate.Note</td>
+                    <td>@getstatus(candidate.Status)</td>
+                    <td>@candidate.SendEmail</td>
+                    <td>
+                        <a href='/updatestatus/@candidate.ID' class="btn btn-outline-dark" role="button">
+                            Update
+                        </a>
+                        <a href='/delete/@candidate.ID' class="btn btn-outline-danger" role="button">
+                            Delete
+                        </a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+@if (OpenCV)
+{
+    <ViewCVDialog Title="CV Detail"
+              OnClose="@CloseCVDialog"
+              ByteCV=CV>
+    </ViewCVDialog>
+}
+@code {
+    public string status { get; set; } = string.Empty;
+    public int count = 0;
+    public bool OpenCV { get; set; }
+    byte[]? CV;
+    HasBeenApply _hasBeenApply = new();
+    HasBeenApply hasBeenApply = new();
+    protected List<Candidate> candidates = new List<Candidate>();
+    protected List<Candidate> original_candidates = new();
+    protected Position position = new();
+    protected List<Position> positions = new List<Position>();
+    protected Team team = new();
+    protected List<Team> teams = new List<Team>();
+    public string filter_position;
+    public string filter_team;
+    protected string SearchString { get; set; } = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await GetCandidate();
+        await GetPosition();
+        await GetTeam();
+
+        filter_position = "all";
+        filter_team = "all";
+    }
+    protected async Task GetPosition()
+    {
+        positions = await Http.GetFromJsonAsync<List<Position>>("api/position/get");
+    }
+    protected async Task GetTeam()
+    {
+        teams = await Http.GetFromJsonAsync<List<Team>>("api/team/get");
+    }
+
+    private async Task CloseCVDialog(bool accept)
+    {
+        if (accept == true)
+        {
+            OpenCV = false;
+            StateHasChanged();
+            CV = null;
+        }
+    }
+    private async Task OpenCVDialog(int id)
+    {
+        CV = await Http.GetFromJsonAsync<byte[]>("/api/Candidate/getCV/" + Convert.ToInt32(id));
+        OpenCV = true;
+        StateHasChanged();
+    }
+
+    protected async Task GetCandidate()
+    {
+
+        candidates = await Http.GetFromJsonAsync<List<Candidate>>("api/candidate/getcandidatepasscv");
+        original_candidates = candidates;
+        int count = 0;
+        foreach (var candidate in candidates)
+        {
+            hasBeenApply = await Http.GetFromJsonAsync<HasBeenApply>("api/handlecandidate/checkhasbeenapply/" + Convert.ToString(candidate.Phone));
+            if (hasBeenApply.Applyed == true)
+            {
+                candidate.HasBeenApply = "Đã từng";
+            }
+            else
+            {
+                candidate.HasBeenApply = "Chưa từng";
+            }
+            count++;
+            candidate.Count = count;
+        }
+    }
+
+    protected async Task Search()
+    {
+        if (!string.IsNullOrEmpty(SearchString))
+        {
+            candidates = await Http.GetFromJsonAsync<List<Candidate>>("api/handleacceptedcvcandidate/search/" + Convert.ToString(SearchString));
+        }
+        else
+        {
+            candidates = await Http.GetFromJsonAsync<List<Candidate>>("api/candidate/getcandidatepasscv");
+        }
+    }
+
+    public async Task ResetSearch()
+    {
+        SearchString = string.Empty;
+        candidates = await Http.GetFromJsonAsync<List<Candidate>>("api/candidate/get");
+    }
+    public string getstatus(int? i)
+    {
+        string a = "";
+        if (i == 0) { a = "Nhận CV"; }
+        if (i == 1) { a = "Loại CV"; }
+        if (i == 2) { a = "Duyệt CV"; }
+        if (i == 3) { a = "Mời Test"; }
+        if (i == 4) { a = "Test OK"; }
+        if (i == 5) { a = "Mời PV vòng 1"; }
+        if (i == 6) { a = "Pass vòng 1"; }
+        if (i == 7) { a = "Mời PV vòng 2"; }
+        if (i == 8) { a = "Pass vòng 2"; }
+        if (i == 9) { a = "Đã gửi Offer"; }
+        if (i == 10) { a = "Đã nhận Offer   "; }
+        if (i == 11) { a = "Từ chối Offer"; }
+        if (i == 12) { a = "Đã gửi Form"; }
+        if (i == 13) { a = "All OK"; }
+        return a;
+    }
+
+
+    private async Task FilterPosition(string value)
+    {
+        filter_position = value;
+        if (filter_position == "all" && filter_team == "all")
+        {
+            await GetCandidate();
+        }
+        else if(filter_position == "all" && filter_team != "all")
+        {
+            var ketqua = from candidate in original_candidates
+                         where  candidate.TeamName.Equals(filter_team)
+                         select candidate;
+            candidates = ketqua.ToList();
+        }
+
+        else if(filter_position != "all" && filter_team == "all")
+        {
+            var ketqua = from candidate in original_candidates
+                         where  candidate.PositionName.Equals(filter_position)
+                         select candidate;
+            candidates = ketqua.ToList();
+        }
+
+        else
+        {
+            var ketqua = from candidate in original_candidates
+                         where candidate.PositionName.Equals(filter_position) &&  candidate.TeamName.Equals(filter_team)
+                         select candidate;
+            candidates = ketqua.ToList();
+        }
+
+
+    }
+
+    private async Task FilterTeam(string value)
+    {
+        filter_team = value;
+         if (filter_position == "all" && filter_team == "all")
+        {
+            await GetCandidate();
+        }
+        else if(filter_position == "all" && filter_team != "all")
+        {
+            var ketqua = from candidate in original_candidates
+                         where  candidate.TeamName.Equals(filter_team)
+                         select candidate;
+            candidates = ketqua.ToList();
+        }
+
+        else if(filter_position != "all" && filter_team == "all")
+        {
+            var ketqua = from candidate in original_candidates
+                         where  candidate.PositionName.Equals(filter_position)
+                         select candidate;
+            candidates = ketqua.ToList();
+        }
+
+        else
+        {
+            var ketqua = from candidate in original_candidates
+                         where candidate.PositionName.Equals(filter_position) &&  candidate.TeamName.Equals(filter_team)
+                         select candidate;
+            candidates = ketqua.ToList();
+        }
+
+
+    }
+
+
+}

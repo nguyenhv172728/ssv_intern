@@ -1,0 +1,351 @@
+﻿@page "/sendmail"
+@inject HttpClient Http
+@using Intern.Share
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JSRunTime
+<PageTitle>Gửi Email</PageTitle>
+<h1>Các ứng viên đã liên hệ được</h1>
+<div>
+    <div class="float-lg-end">
+
+        <button type="button" class="btn mr-5  btn-primary"
+                @onclick="@GenerateMail">
+            Tạo nội dung mail
+        </button>
+        <button type="button" class="btn mr-5 btn-danger"
+                @onclick="@SendMail">
+            Gửi Email
+        </button>
+
+    </div>
+    <div class="container_swap">
+        <div class="div_left">Check All</div>
+        <div class="div_right"> <input type="checkbox" @bind="_CheckAll" @onclick="()=>CheckAll()"></div>
+    </div>
+</div>
+@if (candidates == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <td></td>
+                <th>ID</th>
+                <th>Chức danh</th>
+                <th>Vị trí</th>
+                <th>Họ tên</th>
+                <th>Số điện thoại</th>
+                <th>Đã gửi mail?</th>
+                <th>Thời gian PV</th>
+                <th>Địa điểm PV</th>
+                <th>Note</th>
+                <th>Trạng thái</th>
+                <th>Điểm bài test</th>
+                <th>Hành động</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var candidate in candidates)
+            {
+                <tr>
+                    <td><input type="checkbox" @bind="candidate.CheckBox"></td>
+                    <td>
+                        <button class="btn btn-link"
+                        @onclick="() => OpenCVDialog(candidate.ID)">
+                            @candidate.Count
+                        </button>
+                    </td>
+                    <td>@candidate.PositionName</td>
+                    <td>@candidate.TeamName</td>
+                    <td>@candidate.Name</td>
+                    <td>@candidate.Phone</td>
+                    <td>@candidate.SendEmail</td>
+                    <td>@candidate.TimeInterview</td>
+                    <td>@candidate.LocationInterview</td>
+                    <td>@candidate.Note</td>
+                    <td>@getstatus(candidate.Status)</td>
+                    <td>@candidate.TestPoint</td>
+                    @if (candidate.EmailTitle != null)
+                    {
+                        <td>
+                            <button class="btn btn-primary"
+                        @onclick="() => OpenMailDialog(candidate.EmailTitle, candidate.EmailContent, candidate.Count)">
+                                Preview Mail
+                            </button>
+                        </td>
+                    }
+
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+@if (OpenCV)
+{
+    <ViewCVDialog Title="CV Detail"
+              OnClose="@CloseCVDialog"
+              ByteCV=CV>
+    </ViewCVDialog>
+}
+@if (OpenEditMail)
+{
+    <div class="modal fade show" id="myModal" style="display:block; background-color: rgba(10,10,10,.8);"
+     aria-modal="true" role="dialog">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title">Sửa Email</h4>
+                </div>
+                <div class="modal-body">
+                    <div>
+                        <div>
+                            <label for="name" class="form-label">Tiêu đề</label>
+                            <div class="col-md-10">
+                                <input class="form-control" @bind="title" />
+                            </div>
+                        </div>
+
+                        <div>
+                            <label for="time" class="form-label">Thời gian</label>
+                            <div class="col-md-10">
+                                <input type="datetime-local" class="form-control" @bind="time"/>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label for="location" class="form-label">Địa điểm</label>
+                            <div class="col-md-10">
+                                <input class="form-control" @bind="location" />
+                            </div>
+                        </div>
+
+                        <div>
+                            <label for="phone" class="form-label">Nội dung</label>
+                            <div class="col-md-10">
+                                <textarea class="form-control" @bind="content" />
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-danger" @onclick="@Back">Back</button>
+                    <button type="button" class="btn btn-primary" @onclick="@Save">Save</button>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+}
+@code {
+    public string status { get; set; } = string.Empty;
+    public int count = 0;
+    public int pri_count;
+    public bool OpenCV { get; set; }
+    public bool _CheckAll = false;
+    public bool OpenEditMail { get; set; }
+    byte[]? CV;
+    HasBeenApply _hasBeenApply = new();
+    HasBeenApply hasBeenApply = new();
+    protected List<Candidate> candidates = new List<Candidate>();
+    public string filter_position;
+    public string filter_team;
+    public string title;
+    public string content;
+    public DateTime time;
+    public string location;
+    protected string SearchString { get; set; } = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await GetCandidate();
+    }
+
+
+    private async Task CloseCVDialog(bool accept)
+    {
+        if (accept == true)
+        {
+            OpenCV = false;
+            StateHasChanged();
+            CV = null;
+        }
+    }
+    private async Task OpenCVDialog(int id)
+    {
+        CV = await Http.GetFromJsonAsync<byte[]>("/api/Candidate/getCV/" + Convert.ToInt32(id));
+        OpenCV = true;
+        StateHasChanged();
+    }
+
+    private async Task CloseMailDialog(bool accept)
+    {
+        if (accept == true)
+        {
+            OpenEditMail = false;
+            StateHasChanged();
+        }
+    }
+    private async Task OpenMailDialog(string _title, string _content, int count)
+    {
+        title = _title;
+        content = _content;
+        pri_count = count;
+        OpenEditMail = true;
+        StateHasChanged();
+    }
+
+    private async Task Save()
+    {
+        candidates[pri_count].TimeInterview = time;
+        candidates[pri_count].LocationInterview = location;
+
+        if (candidates[pri_count].Status == 4)
+        {
+            title = "Saishunkan System VietNam_Thư mời phỏng vấn vòng 1";
+        }
+        if (candidates[pri_count].Status == 6)
+        {
+            title = "Saishunkan System VietNam_Thư mời phỏng vấn vòng 2";
+        }
+        if (candidates[pri_count].Status == 4)
+        {
+            content = $"Chúng tôi trân trọng mời bạn đến tham gia buổi phỏng vấn vòng 1 vào vị trí {candidates[pri_count].PositionName} {candidates[pri_count].TeamName},thời gian: {candidates[pri_count].TimeInterview} , địa điểm:{candidates[pri_count].LocationInterview} ";
+        }
+        if (candidates[pri_count].Status == 6)
+        {
+            content = $"Chúng tôi trân trọng mời bạn đến tham gia buổi phỏng vấn vòng 2 vào vị trí {candidates[pri_count].PositionName} {candidates[pri_count].TeamName},thời gian:{candidates[pri_count].TimeInterview}  , địa điểm : {candidates[pri_count].LocationInterview}";
+        }
+        candidates[pri_count].EmailTitle = title;
+        candidates[pri_count].EmailContent = content;
+
+        await Http.PutAsJsonAsync("api/Gmail/save_time_and_location_interview",  candidates[pri_count]);
+        Back();
+
+    }
+    private void Back()
+    {
+        OpenEditMail = false;
+    }
+
+    protected async Task GetCandidate()
+    {
+
+        candidates = await Http.GetFromJsonAsync<List<Candidate>>("api/candidate/getcandidatecancontact");
+        int count = 0;
+        foreach (var candidate in candidates)
+        {
+            hasBeenApply = await Http.GetFromJsonAsync<HasBeenApply>("api/handlecandidate/checkhasbeenapply/" + Convert.ToString(candidate.Phone));
+            if (hasBeenApply.Applyed == true)
+            {
+                candidate.HasBeenApply = "Đã từng";
+            }
+            else
+            {
+                candidate.HasBeenApply = "Chưa từng";
+            }
+
+            candidate.Count = count;
+            count++;
+        }
+    }
+
+    public string getstatus(int? i)
+    {
+        string a = "";
+        if (i == 0) { a = "Nhận CV"; }
+        if (i == 1) { a = "Loại CV"; }
+        if (i == 2) { a = "Duyệt CV"; }
+        if (i == 3) { a = "Mời Test"; }
+        if (i == 4) { a = "Test OK"; }
+        if (i == 5) { a = "Mời PV vòng 1"; }
+        if (i == 6) { a = "Pass vòng 1"; }
+        if (i == 7) { a = "Mời PV vòng 2"; }
+        if (i == 8) { a = "Pass vòng 2"; }
+        if (i == 9) { a = "Đã gửi Offer"; }
+        if (i == 10) { a = "Đã nhận Offer   "; }
+        if (i == 11) { a = "Từ chối Offer"; }
+        if (i == 12) { a = "Đã gửi Form"; }
+        if (i == 13) { a = "All OK"; }
+        return a;
+    }
+
+    public async Task SendMail()
+    {
+        int count = 0;
+        foreach (var candidate in candidates)
+        {
+            if (candidate.CheckBox == true)
+            {
+                count++;
+                Gmail gmail = new Gmail(candidate.Email,candidate.EmailTitle, candidate.EmailContent);
+                await Http.PostAsJsonAsync("api/Gmail/sendemail", gmail);
+                if (candidate.SendEmail == "Chưa") { await Http.PutAsJsonAsync("api/Gmail/note_sended_mail_round1", candidate); }
+                if (candidate.SendEmail == "Đã gửi mail vòng 1") { await Http.PutAsJsonAsync("api/Gmail/note_sended_mail_round2", candidate); }
+            }
+        }
+        if (count > 0) { await JSRunTime.InvokeVoidAsync("eval", "alert(\"Gửi Email thành công\")"); }
+        if (count == 0) { await JSRunTime.InvokeVoidAsync("eval", "alert(\"Vui lòng chọn ứng viên bạn muốn gửi mail\")"); }
+        await GetCandidate();
+    }
+
+
+
+    public async Task GenerateMail()
+    {
+        foreach (var candidate in candidates)
+        {
+            string title = "";
+            string content = "";
+            if (candidate.Status == 4)
+            {
+                title = "Saishunkan System VietNam_Thư mời phỏng vấn vòng 1";
+            }
+            if (candidate.Status == 6)
+            {
+                title = "Saishunkan System VietNam_Thư mời phỏng vấn vòng 2";
+            }
+            if (candidate.Status == 4)
+            {
+                content = $"Chúng tôi trân trọng mời bạn đến tham gia buổi phỏng vấn vòng 1 vào vị trí {candidate.PositionName} {candidate.TeamName},thời gian: {candidate.TimeInterview} , địa điểm:{candidate.LocationInterview} ";
+            }
+            if (candidate.Status == 6)
+            {
+                content = $"Chúng tôi trân trọng mời bạn đến tham gia buổi phỏng vấn vòng 2 vào vị trí {candidate.PositionName} {candidate.TeamName},thời gian:{candidate.TimeInterview}  , địa điểm : {candidate.LocationInterview}";
+            }
+            candidate.EmailTitle = title;
+            candidate.EmailContent = content;
+        }
+
+    }
+    public void CheckAll()
+    {
+        if (_CheckAll == true)
+        {
+            foreach (var candidate in candidates)
+            {
+                candidate.CheckBox = false;
+            }
+        }
+
+        if (_CheckAll == false)
+        {
+            foreach (var candidate in candidates)
+            {
+                candidate.CheckBox = true;
+            }
+
+        }
+
+    }
+
+
+    public void Cancel()
+    {
+        NavigationManager.NavigateTo("/");
+    }
+}

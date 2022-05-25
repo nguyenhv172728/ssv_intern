@@ -1,0 +1,309 @@
+﻿@page "/handle_raw_candidate"
+@inject HttpClient Http
+@using Intern.Share
+@inject NavigationManager NavigationManager
+<PageTitle>Duyệt CV</PageTitle>
+<h1>Danh sách ứng viên cần duyệt CV</h1>
+
+<div class="input-group col mt-5">
+    <input type="search" class="form-control" placeholder="Tìm tên ứng viên"
+           @bind="SearchString" @bind:event="oninput" @onkeyup="SearchCandidate" />
+</div>
+
+<div class="row mt-3">
+    <div class="col">
+        <div class="col-md-10">
+            <label for="Position" class="form-label">Chức danh</label>
+            <select @onchange="(e) => FilterPosition(e.Value.ToString())">
+                <option value="all">---ALL---</option>
+                @foreach (var position in positions)
+                {
+                    <option value="@position.PositionName" selected="@(filter_position == position.PositionName)">@position.PositionName</option>
+                }
+            </select>
+        </div>
+    </div>
+    <div class="col-sm">
+        <div class="col">
+            <label for="Team" class="form-label">Vị trí</label>
+            <select @onchange="(e) => FilterTeam(e.Value.ToString())">
+                <option value="all">---ALL---</option>
+                @foreach (var team in teams)
+                {
+                    <option value="@team.TeamName" selected="@(filter_team == team.TeamName)">@team.TeamName</option>
+                }
+            </select>
+        </div>
+    </div>
+</div>
+
+@if (candidates == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Chức danh</th>
+                <th>Vị trí</th>
+                <th>Họ tên</th>
+                <th>Ngày sinh</th>
+                <th>Địa chỉ</th>
+                <th>Nguồn</th>
+                <th>Đã từng APPLY</th>
+                <th>Duyệt/Loại</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var candidate in candidates)
+            {
+                <tr>
+                    <td>
+                        <button class="btn btn-link"
+                        @onclick="() => OpenCVDialog(candidate.ID)">
+                            @candidate.Count
+                        </button>
+                    </td>
+                    <td>@candidate.PositionName</td>
+                    <td>@candidate.TeamName</td>
+                    <td>@candidate.Name</td>
+                    <td>@candidate.Birthday</td>
+                    <td>@candidate.Address</td>
+                    <td>@candidate.Source</td>
+                    <td>
+                        <button type="button" class="btn btn-light"
+                        @onclick="() => OpenWhyIgnoreDialog(candidate.HasBeenApply,candidate.Phone)">
+                            @candidate.HasBeenApply
+                        </button>
+                    </td>
+                    <td>
+                        <button type="button" class="btn btn-danger"
+                        @onclick="() => OpenIgnoreConfirmDialog(candidate.ID)">
+                            Loại
+                        </button>
+                        <button type="button" class="btn btn-success"
+                        @onclick="() => OpenAcceptConfirmDialog(candidate.ID)">
+                            Duyệt
+                        </button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@if (OpenWhyIgnore)
+{
+    <WhyIgnoreDialog Title="Lý do loại"
+                 OnClose="@CloseWhyIgnoreDialog"
+                 whyignore=@WhyIgnore>
+    </WhyIgnoreDialog>
+}
+
+@if (OpenCV)
+{
+    <ViewCVDialog Title="CV Detail"
+              OnClose="@CloseCVDialog"
+              ByteCV=CV>
+    </ViewCVDialog>
+}
+@if (OpenIgnoreConfirm)
+{
+    <IgnoreCVConfirmDialog Title="Loại CV"
+                       OnClose="@CloseIgnoreConfirmDialog"
+                       ID=id_cv_ignore>
+    </IgnoreCVConfirmDialog>
+}
+@if (OpenAcceptConfirm)
+{
+    <AcceptCVConfirmDialog Title="Chấp nhận CV"
+                       OnClose="@CloseAcceptConfirmDialog"
+                       ID=id_cv_accpet>
+    </AcceptCVConfirmDialog>
+}
+@code {
+    public int count = 0;
+    public int id_cv_ignore = 0;
+    public int id_cv_accpet = 0;
+    public bool OpenCV { get; set; }
+    byte[]? CV;
+    public bool OpenWhyIgnore { get; set; }
+    public bool OpenIgnoreConfirm { get; set; }
+    public bool OpenAcceptConfirm { get; set; }
+    public string WhyIgnore = "";
+    HasBeenApply _hasBeenApply = new();
+    HasBeenApply hasBeenApply = new();
+    protected List<Candidate> candidates = new List<Candidate>();
+    protected List<Candidate> searchcandidates = new();
+    protected Position position = new();
+    protected List<Position> positions = new List<Position>();
+    protected Team team = new();
+    protected List<Team> teams = new List<Team>();
+    public string filter_position;
+    public string filter_team;
+
+
+
+    protected string SearchString { get; set; } = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await GetCandidate();
+        await GetPosition();
+        await GetTeam();
+    }
+    protected async Task GetPosition()
+    {
+        positions = await Http.GetFromJsonAsync<List<Position>>("api/position/get");
+    }
+    protected async Task GetTeam()
+    {
+        teams = await Http.GetFromJsonAsync<List<Team>>("api/team/get");
+    }
+
+    private async Task CloseCVDialog(bool accept)
+    {
+        if (accept == true)
+        {
+            OpenCV = false;
+            StateHasChanged();
+            CV = null;
+        }
+    }
+    private async Task OpenCVDialog(int id)
+    {
+        CV = await Http.GetFromJsonAsync<byte[]>("/api/Candidate/getCV/" + Convert.ToInt32(id));
+        OpenCV = true;
+        StateHasChanged();
+    }
+
+
+
+    private async Task CloseWhyIgnoreDialog(bool accept)
+    {
+        if (accept == true)
+        {
+            OpenWhyIgnore = false;
+            StateHasChanged();
+        }
+    }
+
+
+    private async Task OpenWhyIgnoreDialog(string whyignore, string phone)
+    {
+        if (whyignore == "Chưa từng")
+        {
+            OpenWhyIgnore = false;
+        }
+        else
+        {
+            _hasBeenApply = await Http.GetFromJsonAsync<HasBeenApply>("api/handlecandidate/getwhyignore/" + Convert.ToString(phone));
+            WhyIgnore = _hasBeenApply.whyignore;
+            OpenWhyIgnore = true;
+        }
+        StateHasChanged();
+    }
+
+    private async Task CloseIgnoreConfirmDialog(bool accept)
+    {
+        if (accept == true)
+        {
+            OpenIgnoreConfirm = false;
+            StateHasChanged();
+        }
+        await GetCandidate();
+    }
+
+
+    private async Task OpenIgnoreConfirmDialog(int id)
+    {
+        id_cv_ignore = id;
+        OpenIgnoreConfirm = true;
+        StateHasChanged();
+
+    }
+
+    private async Task CloseAcceptConfirmDialog(bool accept)
+    {
+        if (accept == true)
+        {
+            OpenAcceptConfirm = false;
+            StateHasChanged();
+        }
+        await GetCandidate();
+    }
+
+
+    private async Task OpenAcceptConfirmDialog(int id)
+    {
+        id_cv_accpet = id;
+        OpenAcceptConfirm = true;
+        StateHasChanged();
+
+    }
+
+    protected async Task GetCandidate()
+    {
+
+        candidates = await Http.GetFromJsonAsync<List<Candidate>>("api/candidate/getcandidateneedtohandle");
+        int count = 0;
+        foreach (var candidate in candidates)
+        {
+            hasBeenApply = await Http.GetFromJsonAsync<HasBeenApply>("api/handlecandidate/checkhasbeenapply/" + Convert.ToString(candidate.Phone));
+            if (hasBeenApply.Applyed == true)
+            {
+                candidate.HasBeenApply = "Đã từng";
+            }
+            else
+            {
+                candidate.HasBeenApply = "Chưa từng";
+            }
+            count++;
+            candidate.Count = count;
+        }
+    }
+
+    protected async Task SearchCandidate()
+    {
+        if (!string.IsNullOrEmpty(SearchString))
+        {
+            candidates = await Http.GetFromJsonAsync<List<Candidate>>("api/handlecandidate/search/" + Convert.ToString(SearchString));
+        }
+        else
+        {
+            candidates = await Http.GetFromJsonAsync<List<Candidate>>("api/candidate/getcandidateneedtohandle");
+        }
+    }
+
+    private async Task FilterPosition(string value)
+    {
+        await GetCandidate();
+        if (value.Equals("all")) { }
+        else
+        {
+            var ketqua = from candidate in candidates
+                         where candidate.PositionName.Equals(value)
+                         select candidate;
+            candidates = ketqua.ToList();
+        }
+        filter_position = value;
+    }
+
+    private async Task FilterTeam(string value)
+    {
+        await GetCandidate();
+        if (value.Equals("all")) { }
+        else
+        {
+            var ketqua = from candidate in candidates
+                         where candidate.TeamName.Equals(value)
+                         select candidate;
+            candidates = ketqua.ToList();
+        }
+        filter_team = value;
+    }
+
+}

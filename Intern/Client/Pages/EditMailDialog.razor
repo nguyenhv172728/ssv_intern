@@ -1,0 +1,71 @@
+﻿@using Intern.Share
+@inject HttpClient Http
+@inject NavigationManager NavigationManager
+<div class="modal fade show" id="myModal" style="display:block; background-color: rgba(10,10,10,.8);"
+     aria-modal="true" role="dialog">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">@Title</h4>
+            </div>
+            <div class="modal-body">                                   
+                    <div >
+                        <div>
+                            <label for="name" class="form-label">Tiêu đề</label>
+                            <div class="col-md-10">
+                                <input class="form-control" @bind="EmailTitle"/>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label for="phone" class="form-label">Nội dung</label>
+                            <div class="col-md-10">
+                                <input class="form-control" @bind="EmailContent" />
+                            </div>
+                        </div>
+                    </div>                  
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" @onclick="@Back">Back</button>
+                <button type="button" class="btn btn-primary" @onclick="@Save">Save</button>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@code {
+    [Parameter]
+    public string Title { get; set; }
+
+    [Parameter]
+    public string EmailTitle { get; set; }
+
+    [Parameter]
+    public string EmailContent { get; set; }
+
+    [Parameter]
+    public string SavedEmailTitle { get; set; }
+
+    [Parameter]
+    public string SavedEmailContent { get; set; }
+
+    [Parameter]
+    public EventCallback<bool> OnClose { get; set; }
+
+    private void Save()
+    {
+        SavedEmailTitle = EmailTitle;
+        SavedEmailContent = EmailContent;
+        Back();
+
+    }
+    private Task Back()
+    {
+        return OnClose.InvokeAsync(true);
+    }
+
+
+}

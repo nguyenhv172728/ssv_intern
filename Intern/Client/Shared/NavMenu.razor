@@ -1,0 +1,64 @@
+﻿<div class="top-row ps-3 navbar navbar-dark">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="">Intern</a>
+        <button title="Navigation menu" class="navbar-toggler" @onclick="ToggleNavMenu">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+    </div>
+</div>
+
+<div class="@NavMenuCssClass" @onclick="ToggleNavMenu">
+    <nav class="flex-column">
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="/listcv" >
+                <span class="oi oi-home" aria-hidden="true"></span> Danh sách CV
+            </NavLink>
+        </div>
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="/add">
+                <span class="oi oi-plus" aria-hidden="true"></span> Thêm ứng viên
+            </NavLink>
+        </div>
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="/interviewpersonmanager">
+                <span class="oi oi-plus" aria-hidden="true"></span> Người phỏng vấn
+            </NavLink>
+        </div>
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="/handle_raw_candidate">
+                <span class="oi oi-list-rich" aria-hidden="true"></span> Duyệt CV
+            </NavLink>
+        </div>
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="/handlepasscv">
+                <span class="oi oi-list-rich" aria-hidden="true"></span> Cập nhật trạng thái
+            </NavLink>
+        </div>
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="/sendmail">
+                <span class="oi oi-list-rich" aria-hidden="true"></span> Gửi Email
+            </NavLink>
+        </div>
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="/interviewplanning">
+                <span class="oi oi-list-rich" aria-hidden="true"></span> Lên lịch phỏng vấn
+            </NavLink>
+        </div>
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="/">
+                <span class="oi oi-list-rich" aria-hidden="true"></span> Lịch phỏng vấn
+            </NavLink>
+        </div>
+    </nav>
+</div>
+
+@code {
+    private bool collapseNavMenu = true;
+
+    private string? NavMenuCssClass => collapseNavMenu ? "collapse" : null;
+
+    private void ToggleNavMenu()
+    {
+        collapseNavMenu = !collapseNavMenu;
+    }
+}

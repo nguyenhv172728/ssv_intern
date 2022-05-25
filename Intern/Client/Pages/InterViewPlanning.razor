@@ -1,0 +1,247 @@
+﻿@page "/interviewplanning"
+@inject HttpClient Http
+@using Intern.Share
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JSRunTime
+<PageTitle>Lên lịch phỏng vấn</PageTitle>
+<h1>Các ứng viên đã gửi mail hẹn phỏng vấn chưa đưa vào lịch phỏng vấn</h1>
+@if (candidates == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Chức danh</th>
+                <th>Vị trí</th>
+                <th>Họ tên</th>
+                <th>Số điện thoại</th>
+                <th>Đã gửi mail?</th>
+                <th>Thời gian PV</th>
+                <th>Địa điểm PV</th>
+                <th>Note</th>
+                <th>Trạng thái</th>
+                <th>Hành động</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var candidate in candidates)
+            {
+                <tr>
+                    <td>
+                        <button class="btn btn-link"
+                        @onclick="() => OpenCVDialog(candidate.ID)">
+                            @candidate.Count
+                        </button>
+                    </td>
+                    <td>@candidate.PositionName</td>
+                    <td>@candidate.TeamName</td>
+                    <td>@candidate.Name</td>
+                    <td>@candidate.Phone</td>
+                    <td>@candidate.SendEmail</td>
+                    <td>@candidate.TimeInterview</td>
+                    <td>@candidate.LocationInterview</td>
+                    <td>@candidate.Note</td>
+                    <td>@getstatus(candidate.Status)</td>
+                    <td>
+                        <button class="btn btn-primary"
+                        @onclick="() => OpenPlanningDialog(candidate)">
+                            Lên lịch PV
+                        </button>
+                    </td>
+
+
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+@if (OpenCV)
+{
+    <ViewCVDialog Title="CV Detail"
+              OnClose="@CloseCVDialog"
+              ByteCV=CV>
+    </ViewCVDialog>
+}
+@if (Planning)
+{
+    <div class="modal fade show" id="myModal" style="display:block; background-color: rgba(10,10,10,.8);"
+     aria-modal="true" role="dialog">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title">Phỏng vấn ứng viên @name</h4>
+                </div>
+                <div class="modal-body">
+                    <div>
+                        <div class="mt-3">
+                            <label for="name" class="form-label">Thời gian phỏng vấn</label>
+                            <div class="col-md-10">
+                                <input type="datetime-local" class="form-control" @bind="time_interview" />
+                            </div>
+                        </div>
+
+                        <div class="mt-3">
+                            <label for="time" class="form-label">Địa điểm phỏng vấn</label>
+                            <div class="col-md-10">
+                                <input class="form-control" @bind="location_interview" />
+                            </div>
+                        </div>
+
+                        <div class="mt-3">
+                            <label for="location" class="form-label">Phòng họp</label>
+                            <div class="col-md-10">
+                                <input class="form-control" @bind="room_interview" />
+                            </div>
+                        </div>
+
+                        <div class="mt-3">
+                            <label for="location" class="form-label">Người phỏng vấn</label>
+                            <select @bind="Mulval" multiple="true" class="form-control select">
+                                @foreach (var item in interviewPeople)
+                                {
+                                    <option value="@item.Mail">@item.Name</option>
+                                }
+                            </select>
+                        </div>
+                    </div>
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-danger" @onclick="@Back">Back</button>
+                    <button type="button" class="btn btn-primary" @onclick="()=>Save(id)">Save</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+}
+@code {
+    public string status { get; set; } = string.Empty;
+    public int count = 0;
+    public int pri_count;
+    public int id;
+    public string position;
+    public string name;
+    public DateTime? time_interview;
+    public string location_interview;
+    public string room_interview;
+    public string[] Mulval { get; set; } = new string[] { };
+    public bool OpenCV { get; set; }
+    public bool Planning { get; set; }
+    public bool OpenEditMail { get; set; }
+    byte[]? CV;
+    public string interviewpeople="";
+
+    protected List<Candidate> candidates = new List<Candidate>();
+    protected List<InterviewPerson> interviewPeople = new List<InterviewPerson>();
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        await GetCandidate();
+        await GetInterviewPeople();
+    }
+
+
+    private async Task CloseCVDialog(bool accept)
+    {
+        if (accept == true)
+        {
+            OpenCV = false;
+            StateHasChanged();
+            CV = null;
+        }
+    }
+    private async Task OpenCVDialog(int id)
+    {
+        CV = await Http.GetFromJsonAsync<byte[]>("/api/Candidate/getCV/" + Convert.ToInt32(id));
+        OpenCV = true;
+        StateHasChanged();
+    }
+
+    private async Task OpenPlanningDialog(Candidate candidate)
+    {
+        id=candidate.ID;
+        name = candidate.Name;
+        position = candidate.PositionName;
+        time_interview = candidate.TimeInterview;
+        location_interview = candidate.LocationInterview;
+        room_interview = candidate.RoomInterview;
+        Planning = true;
+        StateHasChanged();
+    }
+
+    protected async Task GetCandidate()
+    {
+
+        candidates = await Http.GetFromJsonAsync<List<Candidate>>("api/candidate/getcandidatesendedmail");
+        int count = 0;
+        foreach (var candidate in candidates)
+        {
+            candidate.Count = count;
+            count++;
+        }
+    }
+    protected async Task GetInterviewPeople()
+    {
+        interviewPeople = await Http.GetFromJsonAsync<List<InterviewPerson>>("api/InterviewPerson/get");
+    }
+
+    public string getstatus(int? i)
+    {
+        string a = "";
+        if (i == 0) { a = "Nhận CV"; }
+        if (i == 1) { a = "Loại CV"; }
+        if (i == 2) { a = "Duyệt CV"; }
+        if (i == 3) { a = "Mời Test"; }
+        if (i == 4) { a = "Test OK"; }
+        if (i == 5) { a = "Mời PV vòng 1"; }
+        if (i == 6) { a = "Pass vòng 1"; }
+        if (i == 7) { a = "Mời PV vòng 2"; }
+        if (i == 8) { a = "Pass vòng 2"; }
+        if (i == 9) { a = "Đã gửi Offer"; }
+        if (i == 10) { a = "Đã nhận Offer   "; }
+        if (i == 11) { a = "Từ chối Offer"; }
+        if (i == 12) { a = "Đã gửi Form"; }
+        if (i == 13) { a = "All OK"; }
+        return a;
+    }
+    private void Back()
+    {
+        Planning = false;
+    }
+
+
+    private async Task Save(int id)
+    {
+        Candidate candidate = new Candidate();
+        candidate.TimeInterview = time_interview;
+        candidate.LocationInterview = location_interview;
+        candidate.RoomInterview = room_interview;
+        candidate.ID = id;
+        await Http.PutAsJsonAsync("api/Gmail/note_planned", candidate);
+        await Http.PutAsJsonAsync("api/candidate/update_calender", candidate);
+
+        foreach (string item in Mulval)
+        {
+            Gmail gmail = new Gmail(item.ToString(), "Lịch phỏng vấn ứng viên", $"Phỏng vấn ứng viên {name}, vị trí {position}, vào lúc {time_interview}, địa điểm {location_interview}, tại phòng {room_interview}");
+            await Http.PostAsJsonAsync("api/Gmail/sendemail", gmail);
+            interviewpeople = interviewpeople + " " + item+" ";
+        }
+        candidate.InterviewPeople = interviewpeople;
+        await Http.PutAsJsonAsync("api/gmail/save_interview_people", candidate);
+        await GetCandidate();
+        await JSRunTime.InvokeVoidAsync("eval", "alert(\"Gửi Email thành công\")");
+
+    }
+
+        
+    public void Cancel()
+    {
+        NavigationManager.NavigateTo("/");
+    }
+}
