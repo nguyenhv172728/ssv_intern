@@ -8134,11 +8134,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Test git\\ssv_intern\\Intern\\Client\\Intern.Client.csproj",
+      "projectUniqueName": "C:\\test\\ssv_intern\\Intern\\Client\\Intern.Client.csproj",
       "projectName": "Intern.Client",
-      "projectPath": "C:\\Test git\\ssv_intern\\Intern\\Client\\Intern.Client.csproj",
+      "projectPath": "C:\\test\\ssv_intern\\Intern\\Client\\Intern.Client.csproj",
       "packagesPath": "C:\\Users\\DELL\\.nuget\\packages\\",
-      "outputPath": "C:\\Test git\\ssv_intern\\Intern\\Client\\obj\\",
+      "outputPath": "C:\\test\\ssv_intern\\Intern\\Client\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft\\Xamarin\\NuGet\\",
@@ -8160,8 +8160,8 @@
         "net6.0": {
           "targetAlias": "net6.0",
           "projectReferences": {
-            "C:\\Test git\\ssv_intern\\Intern\\Shared\\Intern.Shared.csproj": {
-              "projectPath": "C:\\Test git\\ssv_intern\\Intern\\Shared\\Intern.Shared.csproj"
+            "C:\\test\\ssv_intern\\Intern\\Shared\\Intern.Shared.csproj": {
+              "projectPath": "C:\\test\\ssv_intern\\Intern\\Shared\\Intern.Shared.csproj"
             }
           }
         }

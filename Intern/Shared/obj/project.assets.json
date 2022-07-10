@@ -15,11 +15,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Test git\\ssv_intern\\Intern\\Shared\\Intern.Shared.csproj",
+      "projectUniqueName": "C:\\test\\ssv_intern\\Intern\\Shared\\Intern.Shared.csproj",
       "projectName": "Intern.Shared",
-      "projectPath": "C:\\Test git\\ssv_intern\\Intern\\Shared\\Intern.Shared.csproj",
+      "projectPath": "C:\\test\\ssv_intern\\Intern\\Shared\\Intern.Shared.csproj",
       "packagesPath": "C:\\Users\\DELL\\.nuget\\packages\\",
-      "outputPath": "C:\\Test git\\ssv_intern\\Intern\\Shared\\obj\\",
+      "outputPath": "C:\\test\\ssv_intern\\Intern\\Shared\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft\\Xamarin\\NuGet\\",
