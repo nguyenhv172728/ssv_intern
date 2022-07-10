@@ -34,3 +34,15 @@ C:\Project\Internship\CVManager\Intern\Intern\Shared\obj\Debug\net6.0\Intern.Sha
 C:\Project\Internship\CVManager\Intern\Intern\Shared\obj\Debug\net6.0\refint\Intern.Shared.dll
 C:\Project\Internship\CVManager\Intern\Intern\Shared\obj\Debug\net6.0\Intern.Shared.pdb
 C:\Project\Internship\CVManager\Intern\Intern\Shared\obj\Debug\net6.0\ref\Intern.Shared.dll
+C:\Test git\ssv_intern\Intern\Shared\bin\Debug\net6.0\Intern.Shared.deps.json
+C:\Test git\ssv_intern\Intern\Shared\bin\Debug\net6.0\Intern.Shared.dll
+C:\Test git\ssv_intern\Intern\Shared\bin\Debug\net6.0\Intern.Shared.pdb
+C:\Test git\ssv_intern\Intern\Shared\obj\Debug\net6.0\Intern.Shared.csproj.AssemblyReference.cache
+C:\Test git\ssv_intern\Intern\Shared\obj\Debug\net6.0\Intern.Shared.GeneratedMSBuildEditorConfig.editorconfig
+C:\Test git\ssv_intern\Intern\Shared\obj\Debug\net6.0\Intern.Shared.AssemblyInfoInputs.cache
+C:\Test git\ssv_intern\Intern\Shared\obj\Debug\net6.0\Intern.Shared.AssemblyInfo.cs
+C:\Test git\ssv_intern\Intern\Shared\obj\Debug\net6.0\Intern.Shared.csproj.CoreCompileInputs.cache
+C:\Test git\ssv_intern\Intern\Shared\obj\Debug\net6.0\Intern.Shared.dll
+C:\Test git\ssv_intern\Intern\Shared\obj\Debug\net6.0\refint\Intern.Shared.dll
+C:\Test git\ssv_intern\Intern\Shared\obj\Debug\net6.0\Intern.Shared.pdb
+C:\Test git\ssv_intern\Intern\Shared\obj\Debug\net6.0\ref\Intern.Shared.dll
